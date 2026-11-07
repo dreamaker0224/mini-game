@@ -1,0 +1,6 @@
+{
+  "name": "甜蜜擺鐘甜點塔 Sweet Swing Stacker",
+  "description": "精緻日系甜點擺鐘掉落堆疊單機手機遊戲，考驗節奏與反應，裁切對齊疊出你的夢幻甜點塔！",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
