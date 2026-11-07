@@ -127,10 +127,10 @@ export function drawDessertBlock(
     ctx.translate(-(x + width / 2), -(y + height));
   }
 
-  // Soft drop shadow under the block
-  ctx.fillStyle = 'rgba(45, 20, 15, 0.12)';
+  // Enhanced soft drop shadow under the block
+  ctx.fillStyle = 'rgba(40, 15, 10, 0.16)';
   ctx.beginPath();
-  ctx.ellipse(x + width / 2, y + height + 2, width / 2 - 2, 4, 0, 0, Math.PI * 2);
+  ctx.ellipse(x + width / 2, y + height + 2.5, width / 2 + 1, 4.5, 0, 0, Math.PI * 2);
   ctx.fill();
 
   switch (type) {
@@ -159,6 +159,12 @@ export function drawDessertBlock(
       drawBlueberryTart(ctx, x, y, width, height);
       break;
   }
+
+  // Crisp delicate edge rim for 100% pop on any sky background
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.45)';
+  ctx.lineWidth = 1;
+  drawRoundRect(ctx, x + 0.5, y + 0.5, width - 1, height - 1, 6);
+  ctx.stroke();
 
   ctx.restore();
 }
@@ -515,11 +521,11 @@ function drawChocolateRoll(
   w: number,
   h: number
 ) {
-  // Rich cocoa sponge
+  // Rich cocoa sponge with high clarity
   const chocoGrad = ctx.createLinearGradient(x, y, x, y + h);
-  chocoGrad.addColorStop(0, '#5A3525');
-  chocoGrad.addColorStop(0.5, '#432619');
-  chocoGrad.addColorStop(1, '#2E190E');
+  chocoGrad.addColorStop(0, '#7D4730');
+  chocoGrad.addColorStop(0.5, '#5F3321');
+  chocoGrad.addColorStop(1, '#482416');
 
   drawRoundRect(ctx, x, y, w, h, 7);
   ctx.fillStyle = chocoGrad;

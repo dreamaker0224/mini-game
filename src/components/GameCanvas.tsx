@@ -514,42 +514,83 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
       ctx.translate(shakeX, shakeY);
     }
 
-    // Dynamic Atmosphere Sky based on height
-    const heightProgress = Math.min(1, s.score / 35);
-    const bgGrad = ctx.createLinearGradient(0, 0, 0, ch);
+    // Continuous Infinite Atmospheric Color Palettes (All high-luminance, soft pastel, Japanese dessert themes)
+    const PALETTES = [
+      // 0: Morning Vanilla Cream
+      { top: [255, 253, 248], mid: [255, 244, 230], bot: [254, 215, 170] },
+      // 1: Strawberry Sakura Blush
+      { top: [255, 245, 247], mid: [255, 228, 230], bot: [254, 205, 211] },
+      // 2: Peach Apricot Honey
+      { top: [255, 247, 237], mid: [254, 237, 213], bot: [253, 186, 116] },
+      // 3: Spring Matcha Breeze
+      { top: [247, 254, 231], mid: [236, 252, 203], bot: [217, 249, 157] },
+      // 4: Mint Soda Foam
+      { top: [240, 253, 250], mid: [204, 251, 241], bot: [167, 243, 208] },
+      // 5: Summer Azure & Peach
+      { top: [224, 242, 254], mid: [186, 230, 253], bot: [254, 215, 170] },
+      // 6: Dreamy Lilac Rose
+      { top: [250, 245, 255], mid: [243, 232, 255], bot: [251, 207, 232] },
+      // 7: Golden Sunlight Souffle
+      { top: [255, 251, 235], mid: [254, 243, 199], bot: [253, 230, 138] },
+    ];
 
-    if (heightProgress < 0.3) {
-      // Morning Cream Patisserie
-      bgGrad.addColorStop(0, '#FFF7ED');
-      bgGrad.addColorStop(0.5, '#FFEDD5');
-      bgGrad.addColorStop(1, '#FED7AA');
-    } else if (heightProgress < 0.6) {
-      // Afternoon Strawberry Tea
-      bgGrad.addColorStop(0, '#FFF1F2');
-      bgGrad.addColorStop(0.5, '#FFE4E6');
-      bgGrad.addColorStop(1, '#FECDD3');
-    } else if (heightProgress < 0.85) {
-      // Golden Hour Sunset
-      bgGrad.addColorStop(0, '#FDF2F8');
-      bgGrad.addColorStop(0.5, '#FCE7F3');
-      bgGrad.addColorStop(1, '#F472B6');
-    } else {
-      // Twilight Starry Dessert Sky
-      bgGrad.addColorStop(0, '#312E81');
-      bgGrad.addColorStop(0.5, '#4C1D95');
-      bgGrad.addColorStop(1, '#701A75');
-    }
+    // Smooth continuous progress: shifts by layer stack + subtle live time drift
+    const timeSec = (s.lastFrameTime || performance.now()) / 1000;
+    const continuousT = (s.score * 0.25) + ((timeSec / 8) % PALETTES.length);
+    const pLen = PALETTES.length;
+    const idxA = Math.floor(continuousT) % pLen;
+    const idxB = (idxA + 1) % pLen;
+    const rawF = continuousT - Math.floor(continuousT);
+    // Smoothstep interpolation
+    const f = rawF * rawF * (3 - 2 * rawF);
+
+    const lerp = (a: number, b: number, t: number) => Math.round(a + (b - a) * t);
+    const colorToRgb = (c: number[]) => `rgb(${c[0]}, ${c[1]}, ${c[2]})`;
+
+    const curTop = colorToRgb([
+      lerp(PALETTES[idxA].top[0], PALETTES[idxB].top[0], f),
+      lerp(PALETTES[idxA].top[1], PALETTES[idxB].top[1], f),
+      lerp(PALETTES[idxA].top[2], PALETTES[idxB].top[2], f),
+    ]);
+    const curMid = colorToRgb([
+      lerp(PALETTES[idxA].mid[0], PALETTES[idxB].mid[0], f),
+      lerp(PALETTES[idxA].mid[1], PALETTES[idxB].mid[1], f),
+      lerp(PALETTES[idxA].mid[2], PALETTES[idxB].mid[2], f),
+    ]);
+    const curBot = colorToRgb([
+      lerp(PALETTES[idxA].bot[0], PALETTES[idxB].bot[0], f),
+      lerp(PALETTES[idxA].bot[1], PALETTES[idxB].bot[1], f),
+      lerp(PALETTES[idxA].bot[2], PALETTES[idxB].bot[2], f),
+    ]);
+
+    const bgGrad = ctx.createLinearGradient(0, 0, 0, ch);
+    bgGrad.addColorStop(0, curTop);
+    bgGrad.addColorStop(0.5, curMid);
+    bgGrad.addColorStop(1, curBot);
 
     ctx.fillStyle = bgGrad;
     ctx.fillRect(0, 0, cw, ch);
 
-    // Cute subtle background pattern (polka dots or stars)
-    ctx.fillStyle = heightProgress > 0.85 ? 'rgba(255, 255, 255, 0.4)' : 'rgba(255, 255, 255, 0.35)';
+    // Floating dynamic ambient sugar bubbles
+    ctx.save();
+    for (let i = 0; i < 7; i++) {
+      const bubbleX = (cw * ((i * 0.17 + timeSec * 0.02) % 1));
+      const bubbleY = (ch * (1 - ((i * 0.19 + timeSec * 0.035) % 1)));
+      const bubbleR = 14 + (i % 3) * 8;
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.28)';
+      ctx.beginPath();
+      ctx.arc(bubbleX, bubbleY, bubbleR, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.restore();
+
+    // Cute subtle background polka dot pattern
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
     const dotSpacing = 36;
     for (let px = 18; px < cw; px += dotSpacing) {
       for (let py = 18; py < ch; py += dotSpacing) {
         ctx.beginPath();
-        ctx.arc(px, py, 1.5, 0, Math.PI * 2);
+        ctx.arc(px, py, 1.8, 0, Math.PI * 2);
         ctx.fill();
       }
     }
@@ -613,7 +654,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
     const pendulumX = pivotX + armLen * Math.sin(s.swingAngle);
     const pendulumY = pivotY + armLen * Math.cos(s.swingAngle);
 
-    // Pendulum ceiling mount
+    // Clean Pendulum Ceiling Mount
     ctx.fillStyle = '#78350F';
     ctx.fillRect(pivotX - 22, s.cameraY + 2, 44, 12);
     ctx.strokeStyle = '#D97706';
@@ -658,6 +699,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
     if (!s.falling && !s.gameOver && isPlaying) {
       const suspendedX = pendulumX - s.currentWidth / 2;
       const suspendedY = pendulumY - BLOCK_HEIGHT / 2 + 8;
+
       drawDessertBlock(
         ctx,
         suspendedX,
@@ -669,11 +711,11 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
         false
       );
 
-      // Clear vertical drop projection guide line pointing straight down
+      // Clean vertical drop projection guide line pointing straight down
       ctx.save();
       const topBlock = s.blocks[s.blocks.length - 1];
       const targetGuideY = topBlock ? Math.max(suspendedY + BLOCK_HEIGHT + 40, topBlock.y) : suspendedY + BLOCK_HEIGHT + 120;
-      ctx.strokeStyle = 'rgba(217, 119, 6, 0.35)';
+      ctx.strokeStyle = 'rgba(217, 119, 6, 0.45)';
       ctx.lineWidth = 2;
       ctx.setLineDash([5, 6]);
       ctx.beginPath();
@@ -682,7 +724,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
       ctx.stroke();
 
       // Left & Right edges soft vertical projection
-      ctx.strokeStyle = 'rgba(217, 119, 6, 0.15)';
+      ctx.strokeStyle = 'rgba(217, 119, 6, 0.18)';
       ctx.lineWidth = 1;
       ctx.setLineDash([3, 5]);
       ctx.beginPath();
