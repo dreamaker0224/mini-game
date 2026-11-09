@@ -114,7 +114,8 @@ export function drawDessertBlock(
   height: number,
   type: DessertType,
   _colorSeed: number = 0,
-  isSquashed: boolean = false
+  isSquashed: boolean = false,
+  creamDripSide?: 'left' | 'right' | null
 ) {
   if (width <= 0 || height <= 0) return;
 
@@ -165,6 +166,29 @@ export function drawDessertBlock(
   ctx.lineWidth = 1;
   drawRoundRect(ctx, x + 0.5, y + 0.5, width - 1, height - 1, 6);
   ctx.stroke();
+
+  // Fresh cream drip marks on sliced edge
+  if (creamDripSide === 'left') {
+    ctx.save();
+    ctx.fillStyle = '#FFFDF0';
+    ctx.shadowColor = 'rgba(255, 240, 200, 0.4)';
+    ctx.shadowBlur = 4;
+    ctx.beginPath();
+    ctx.ellipse(x + 2, y + height * 0.45, 3.5, 5.5, 0, 0, Math.PI * 2);
+    ctx.ellipse(x + 1.5, y + height * 0.75, 2.5, 3.5, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  } else if (creamDripSide === 'right') {
+    ctx.save();
+    ctx.fillStyle = '#FFFDF0';
+    ctx.shadowColor = 'rgba(255, 240, 200, 0.4)';
+    ctx.shadowBlur = 4;
+    ctx.beginPath();
+    ctx.ellipse(x + width - 2, y + height * 0.45, 3.5, 5.5, 0, 0, Math.PI * 2);
+    ctx.ellipse(x + width - 1.5, y + height * 0.75, 2.5, 3.5, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
 
   ctx.restore();
 }

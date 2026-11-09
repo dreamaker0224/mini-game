@@ -8,7 +8,8 @@ import { GameCanvas } from './components/GameCanvas';
 import { TitleScreen } from './components/TitleScreen';
 import { GameHUD } from './components/GameHUD';
 import { GameOverModal } from './components/GameOverModal';
-import { GameState } from './game/types';
+import { PauseModal } from './components/PauseModal';
+import { GameState, ActiveBuffs, DessertItem } from './game/types';
 import { sound } from './game/audio';
 import { Smartphone } from 'lucide-react';
 
@@ -22,6 +23,14 @@ export default function App() {
   const [isNewRecord, setIsNewRecord] = useState<boolean>(false);
   const [newGameSignal, setNewGameSignal] = useState<number>(0);
   const [isMuted, setIsMuted] = useState<boolean>(false);
+  const [isFever, setIsFever] = useState<boolean>(false);
+  const [milestoneTitle, setMilestoneTitle] = useState<string | null>(null);
+  const [activeBuffs, setActiveBuffs] = useState<ActiveBuffs>({
+    shieldCount: 0,
+    slowMoCharges: 0,
+    lastCollectedItem: null,
+  });
+  const [incomingItem, setIncomingItem] = useState<DessertItem | null>(null);
 
   // Load saved high scores & sound preference
   useEffect(() => {
@@ -42,14 +51,68 @@ export default function App() {
   const handleStartGame = useCallback(() => {
     setGameState('PLAYING');
     setIsNewRecord(false);
+    setIsFever(false);
+    setMilestoneTitle(null);
+    setActiveBuffs({ shieldCount: 0, slowMoCharges: 0, lastCollectedItem: null });
+    setIncomingItem(null);
     setNewGameSignal((prev) => prev + 1);
   }, []);
 
+  const handleTogglePause = useCallback(() => {
+    setGameState((prev) => {
+      if (prev === 'PLAYING') {
+        sound.playTap();
+        return 'PAUSED';
+      }
+      if (prev === 'PAUSED') {
+        sound.playTap();
+        return 'PLAYING';
+      }
+      return prev;
+    });
+  }, []);
+
+  const handleResume = useCallback(() => {
+    sound.playTap();
+    setGameState('PLAYING');
+  }, []);
+
+  // Keyboard shortcut for Pause/Resume (P or Escape)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'p' || e.key === 'P' || e.key === 'Escape') {
+        if (gameState === 'PLAYING' || gameState === 'PAUSED') {
+          e.preventDefault();
+          handleTogglePause();
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [gameState, handleTogglePause]);
+
   const handleScoreUpdate = useCallback(
-    (curScore: number, curCombo: number, curSpeed: number) => {
+    (
+      curScore: number,
+      curCombo: number,
+      curSpeed: number,
+      fever: boolean,
+      title: string | null,
+      buffs?: ActiveBuffs,
+      item?: DessertItem | null
+    ) => {
       setScore(curScore);
       setCombo(curCombo);
       setSpeedMultiplier(curSpeed);
+      setIsFever(fever);
+      if (buffs) setActiveBuffs(buffs);
+      setIncomingItem(item || null);
+      if (title) {
+        setMilestoneTitle(title);
+        setTimeout(() => {
+          setMilestoneTitle(null);
+        }, 3600);
+      }
     },
     []
   );
@@ -94,7 +157,8 @@ export default function App() {
         <div className="p-3 bg-stone-900/60 rounded-xl border border-stone-800 text-xs space-y-1">
           <div className="text-amber-400 font-bold">遊戲操作：</div>
           <div>• 點擊螢幕任意處掉落甜點</div>
-          <div>• 電腦亦可按空白鍵 / Enter 鍵</div>
+          <div>• 電腦按空白鍵 / Enter 鍵掉落</div>
+          <div>• 按 P 或 Esc 鍵隨時暫停遊戲</div>
           <div>• 連續精準置中獲得連擊加分</div>
         </div>
       </div>
@@ -113,20 +177,27 @@ export default function App() {
       >
         {/* Dynamic Game Canvas Viewport */}
         <GameCanvas
-          isPlaying={gameState === 'PLAYING'}
+          isPlaying={gameState === 'PLAYING' || gameState === 'PAUSED'}
+          isPaused={gameState === 'PAUSED'}
           onGameOver={handleGameOver}
           onScoreUpdate={handleScoreUpdate}
           onNewGameSignal={newGameSignal}
         />
 
-        {/* HUD Overlay during active play */}
-        {gameState === 'PLAYING' && (
+        {/* HUD Overlay during active play or paused state */}
+        {(gameState === 'PLAYING' || gameState === 'PAUSED') && (
           <GameHUD
             score={score}
             combo={combo}
             speedMultiplier={speedMultiplier}
             isMuted={isMuted}
+            isFever={isFever}
+            isPaused={gameState === 'PAUSED'}
+            milestoneTitle={milestoneTitle}
+            activeBuffs={activeBuffs}
+            incomingItem={incomingItem}
             onToggleMute={handleToggleMute}
+            onTogglePause={handleTogglePause}
             onRestart={handleRestart}
           />
         )}
@@ -139,6 +210,19 @@ export default function App() {
             onStart={handleStartGame}
             isMuted={isMuted}
             onToggleMute={handleToggleMute}
+          />
+        )}
+
+        {/* Pause Modal Overlay */}
+        {gameState === 'PAUSED' && (
+          <PauseModal
+            score={score}
+            combo={combo}
+            isMuted={isMuted}
+            onToggleMute={handleToggleMute}
+            onResume={handleResume}
+            onRestart={handleRestart}
+            onHome={handleHome}
           />
         )}
 
@@ -157,3 +241,4 @@ export default function App() {
     </div>
   );
 }
+

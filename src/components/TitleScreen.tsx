@@ -96,6 +96,10 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({
             <span className="w-4 h-4 rounded-full bg-amber-500 text-white flex items-center justify-center text-[10px] font-bold shrink-0">3</span>
             <span>完美置中觸發<b>音階連擊加分</b>，掉出或倒塌則結束</span>
           </div>
+          <div className="flex items-center gap-2 text-rose-700 font-medium">
+            <span className="w-4 h-4 rounded-full bg-rose-500 text-white flex items-center justify-center text-[10px] font-bold shrink-0">★</span>
+            <span>完美蓋中下方甜點道具可獲得<b>金櫻桃、慢速鐘、保命盾</b>！</span>
+          </div>
         </div>
 
         {/* Start Game CTA */}

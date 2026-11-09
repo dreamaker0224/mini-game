@@ -1,6 +1,6 @@
 {
-  "summary":  "Updated implementation plan reflecting clean classic pendulum visuals, high altitude bright sky gradient, zero-inertia vertical drop, constant swing speed, and GitHub Pages automated deployment workflow.",
-  "updatedAt":  "2026-11-07T07:32:35.275518545Z",
+  "summary":  "修正甜點完全丟歪時在空中定格的物理異常：將未疊中的整塊甜點轉化為翻滾下墜碎片物件，套用自然重力加速度與旋轉物理衝量，讓甜點流暢翻滾墜落出螢幕外；在完全墜離螢幕約 0.8 秒後彈出結算視窗，提供具張力且自然的失敗回饋。",
+  "updatedAt":  "2026-11-09T09:48:29.293671942Z",
   "requestFeedback":  true,
   "userFacing":  true
 }

@@ -28,12 +28,13 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({
 
   // Derive chef title and height in meters
   const getChefTitle = (layers: number) => {
-    if (layers < 5) return { title: '甜點見習生', desc: '初出茅廬的小甜點師，多掌握擺鐘節奏吧！', icon: '🧁' };
-    if (layers < 12) return { title: '鬆餅熟練工', desc: '已經能穩定掌握舒芙蕾與千層的火候！', icon: '🥞' };
-    if (layers < 20) return { title: '馬卡龍巧匠', desc: '裁切精準、重心平穩，深受顧客歡迎！', icon: '🍪' };
-    if (layers < 30) return { title: '法式甜點名廚', desc: '卓越的置中直覺，蛋糕塔直通天際！', icon: '🍰' };
-    if (layers < 45) return { title: '皇家御用甜品宗師', desc: '神乎其技的擺鐘微操，傳奇等級的技術！', icon: '👑' };
-    return { title: '甜點界無雙神話', desc: '登峰造極！你的甜點塔突破大氣層！', icon: '🌟' };
+    if (layers < 10) return { title: '甜點見習生', desc: '初出茅廬的小甜點師，多掌握擺鐘節奏吧！', icon: '🧁' };
+    if (layers < 20) return { title: '初級烘焙學徒', desc: '已經能穩定掌握舒芙蕾與蛋糕的落點節奏！', icon: '🥞' };
+    if (layers < 30) return { title: '法式甜品心匠', desc: '裁切精準、重心平穩，深受顧客歡迎！', icon: '🍪' };
+    if (layers < 40) return { title: '舒芙蕾名家', desc: '卓越的置中直覺，蛋糕塔直通天際！', icon: '🍰' };
+    if (layers < 50) return { title: '特級甜點大師', desc: '神乎其技的擺鐘微操，大師級的指尖平衡！', icon: '👑' };
+    if (layers < 60) return { title: '米其林三星甜點神', desc: '登峰造極！你的甜點塔突破大氣層！', icon: '🌟' };
+    return { title: '傳奇甜點之巔', desc: '神乎其神！無可撼動的甜點界傳奇！', icon: '✨' };
   };
 
   const chef = getChefTitle(score);
